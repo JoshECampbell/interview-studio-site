@@ -50,7 +50,7 @@ function statusPill(p) {
   const e=entry(p.id);
   if(due(p)) return '<span class="pill warn">Due for review</span>';
   if(completed(p)) return `<span class="pill solved">${p.type==='coding'?'Checks passed':p.answerFormat==='numeric'?'Answer checked':'Self-reviewed'}</span>`;
-  if(e.answer?.trim() || e.numericAnswers?.some(v=>v.trim()) || (e.code && e.code!==p.starter)) return '<span class="pill warn">In progress</span>';
+  if(e.answer?.trim() || e.numericAnswers?.some(v=>v.trim()) || (p.type==='coding'&&e.attempts>0)) return '<span class="pill warn">In progress</span>';
   if(e.rating==='again') return '<span class="pill warn">Learning</span>';
   return '<span class="pill">Not started</span>';
 }
@@ -143,7 +143,8 @@ function openProblem(id,session=false) {
   $('#run-code').style.display=code?'inline-flex':'none';$('#reset-code').style.display=code?'inline-block':'none';$('#review-answer').style.display=code?'none':'inline-flex';
   $('#answer-label').textContent=code?(current.language==='sql'?'Your SQL query':'Your implementation'):numeric?'Your final answer':'Your reasoning';
   $('#review-answer').textContent=numeric?'Check answer →':'Review my answer →';$('#editor-language').textContent=code?(current.language==='sql'?'SQLite · runs in your browser':`Python 3 · ${current.dependency||'standard library'}`):numeric?'Number or fraction':'Written answer';
-  clearDiagnostics();if(code){editor.setOption('mode',current.language==='sql'?'text/x-sql':'python');changingEditor=true;editor.setValue(e.code??current.starter);editor.clearHistory();changingEditor=false;}
+  $('#draft-status').textContent=code?'Fresh attempt · code resets when you reopen':'Answers and notes autosave';
+  clearDiagnostics();if(code){editor.setOption('mode',current.language==='sql'?'text/x-sql':'python');changingEditor=true;editor.setValue(current.starter);editor.clearHistory();changingEditor=false;}
   updateCounts();updateBookmark();renderReference();updateReviewInfo();
   const dialog=$('#workspace');if(!dialog.open) dialog.showModal();dialog.scrollTop=0;
   if(code) requestAnimationFrame(()=>editor.refresh());
@@ -152,7 +153,7 @@ function snapshotDraft() {
   if(!current) return; const e=entry(current.id);
   if(current.answerFormat==='numeric')e.numericAnswers=$$('#numeric-wrap input').map(input=>input.value);
   e.answer=$('#written').value;e.notes=$('#personal-notes').value;
-  if(current.type==='coding') e.code=editor.getValue();
+  // Implementations stay in the current editor, so future attempts start fresh.
   e.updated=Date.now(); saveSoon();
 }
 function updateBookmark() { const marked=!!entry(current.id).bookmark; $('#bookmark').textContent=marked?'★ Saved for later':'☆ Save for later';$('#bookmark').setAttribute('aria-pressed',String(marked)); }
@@ -192,7 +193,7 @@ function rate(rating) {
 }
 function updateReviewInfo() {
   const e=entry(current.id);
-  $('#review-info').textContent=e.due?`Next review: ${new Date(e.due).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})} · ${current.answerFormat==='numeric'?'numeric answer checked':current.type==='theory'?'self-assessed':'test-verified completion'}`:'Answers and notes save automatically on this computer.';
+  $('#review-info').textContent=e.due?`Next review: ${new Date(e.due).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})} · ${current.answerFormat==='numeric'?'numeric answer checked':current.type==='theory'?'self-assessed':'test-verified completion'}`:current.type==='coding'?'Notes and progress save. Code resets for each new attempt.':'Answers and notes save automatically on this computer.';
 }
 async function runCode() {
   if(runBusy||!current||current.type!=='coding') return;
@@ -234,12 +235,12 @@ function nextProblem() {
   const choices=recommended(current.type).filter(p=>p.id!==current.id);if(choices[0]) openProblem(choices[0].id);
 }
 function closeWorkspace(){snapshotDraft();$('#workspace').close();current=null;navigate(view);flushSave();}
-function exportProgress(){snapshotDraft();const blob=new Blob([JSON.stringify({format:'interview-studio',version:1,exported:new Date().toISOString(),state},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`interview-studio-${dateKey()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('Progress exported, including your notes and code.');}
+function exportProgress(){snapshotDraft();const blob=new Blob([JSON.stringify({format:'interview-studio',version:1,exported:new Date().toISOString(),state},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`interview-studio-${dateKey()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('Progress and notes exported.');}
 function validState(candidate) {
   if(!candidate||typeof candidate!=='object'||Array.isArray(candidate)) throw Error('Invalid progress data');
   const clean={items:{},activity:{},readings:{},session:null,updated:Number(candidate.updated)||0};
   for(const p of problems){const raw=candidate.items?.[p.id];if(!raw||typeof raw!=='object')continue;const e={};
-    for(const key of ['answer','notes','code']) if(typeof raw[key]==='string') e[key]=raw[key].slice(0,100000);
+    for(const key of ['answer','notes']) if(typeof raw[key]==='string') e[key]=raw[key].slice(0,100000);
     for(const key of ['due','lastReview','interval','updated','attempts']) if(Number.isFinite(raw[key])&&raw[key]>=0)e[key]=raw[key];
     if(['again','good','mastered'].includes(raw.rating)) e.rating=raw.rating;
     e.bookmark=raw.bookmark===true;e.passed=raw.passed===true;
@@ -296,7 +297,7 @@ async function init(){
     $('#bookmark').addEventListener('click',()=>{const e=entry(current.id);e.bookmark=!e.bookmark;snapshotDraft();updateBookmark();});
     $('#close-workspace').addEventListener('click',closeWorkspace);$('#workspace').addEventListener('cancel',e=>{e.preventDefault();closeWorkspace();});
     $('#run-code').addEventListener('click',runCode);$('#review-answer').addEventListener('click',showAssessment);
-    $('#reset-code').addEventListener('click',()=>{entry(current.id).previousCode=editor.getValue();editor.setValue(current.starter);toast('Starter restored. Use Ctrl+Z in the editor to undo.');});
+    $('#reset-code').addEventListener('click',()=>{editor.setValue(current.starter);toast('Starter restored. Use Ctrl+Z in the editor to undo.');});
     $('#copy-concepts').addEventListener('click',addConceptNotes);$('#next-problem').addEventListener('click',nextProblem);
     $('#assessment').addEventListener('change',e=>{if(e.target.dataset.rubric!==undefined){entry(current.id).rubric=$$('#assessment input:checked').map(n=>Number(n.dataset.rubric));snapshotDraft();}});
     $('#export').addEventListener('click',exportProgress);$('#import').addEventListener('click',()=>$('#import-file').click());$('#import-file').addEventListener('change',e=>importProgress(e.target.files[0]));
