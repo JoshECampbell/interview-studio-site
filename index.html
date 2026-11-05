@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <script>window.PREP_BUILD = "bf7e6213c2d3";</script>
+  <script>window.PREP_STATIC = true;</script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173f38"><title>Interview Studio</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%23173f38'/%3E%3Cpath d='M14 13h20v5H19v5h13v5H19v7h-5z' fill='%23d5edb1'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./vendor/codemirror.css?v=10a4e8366007"><link rel="stylesheet" href="./style.css?v=f62818128081"><link rel="stylesheet" href="./review.css?v=b0c0fc6a7bad"><link rel="stylesheet" href="./vendor/show-hint.css?v=9058c1c14fcd"><link rel="stylesheet" href="./editor-tools.css?v=7b87ccc71618">
+  <script defer src="./vendor/codemirror.js?v=8e8b5e3cc4be"></script><script defer src="./vendor/python.js?v=19a59ca387ad"></script><script defer src="./vendor/show-hint.js?v=6d940e45a07c"></script><script defer src="./vendor/sql-mode.js?v=d5edb6bd39ca"></script><script defer src="./cloud-judge.js?v=682e72cf0f0e"></script><script defer src="./editor-tools.js?v=340a5bf8680d"></script><script defer src="./sql-course.js?v=213437f74631"></script><script defer src="./platform.js?v=d03f4cc95424"></script><script defer src="./review.js?v=ab1f663c0026"></script><script defer src="./catalog.js?v=f7a051136047"></script><script defer src="./app.js?v=d561a828af79"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="#home"><span class="brand-icon">i<span>↗</span></span><span>interview<span class="brand-light">studio</span></span></a>
+    <div class="sidebar-label">YOUR WORKSPACE</div>
+    <nav aria-label="Main navigation">
+      <button data-view="home" class="nav active"><span>◫</span> Overview</button>
+      <button data-view="library" class="nav"><span>▤</span> Practice library <small id="library-count"></small></button>
+      <button data-view="sql" class="nav"><span>SQL</span> SQL from zero</button>
+      <button data-view="catalog" class="nav"><span>↗</span> More source practice</button>
+      <button data-view="review" class="nav"><span>↻</span> Review queue <small id="due-count"></small></button>
+      <button data-view="notes" class="nav"><span>✎</span> My notebook</button>
+      <button data-view="resources" class="nav"><span>↗</span> Reading room</button>
+    </nav>
+    <div class="sidebar-bottom"><div class="local-indicator"><i></i> YOUR WORKSPACE</div><p>Your pace. Your progress.<br>Heavy runtimes only when checking.</p><button id="configure-runner" class="quiet">⚙ Cloud coding runner</button><button id="export" class="quiet">↓ Export progress</button><button id="import" class="quiet">↑ Import progress</button><input id="import-file" type="file" accept="application/json,.json" hidden><div id="save-status" role="status">Connecting…</div></div>
+  </aside>
+  <div class="app-shell">
+    <header class="topbar"><span id="breadcrumb">Workspace <span>/</span> Overview</span><div><span id="today"></span><span class="avatar">YOU</span></div></header>
+    <main id="main"><div class="loading">Opening your workspace…</div></main>
+  </div>
+  <dialog id="workspace" aria-labelledby="problem-title">
+    <div class="workspace-top"><button id="close-workspace" class="quiet">← Back to workspace</button><span id="session-status"></span><button id="bookmark" class="quiet">☆ Save for later</button></div>
+    <div class="workspace-heading"><div><div id="problem-meta" class="eyebrow"></div><h1 id="problem-title"></h1></div><span id="problem-state" class="pill"></span></div>
+    <div class="workspace-grid">
+      <section class="reference-panel"><div class="tabs" role="tablist" aria-label="Study material"><button role="tab" data-tab="prompt" class="selected">Question</button><button role="tab" data-tab="concepts">Concepts</button><button role="tab" data-tab="solution">Solution</button></div><div id="reference-content" class="reference-content" role="tabpanel"></div></section>
+      <section class="answer-panel"><div class="answer-toolbar"><strong id="answer-label">Your reasoning</strong><span id="editor-language">Written answer</span></div><div id="written-wrap"><label for="written" class="sr-only">Your written answer</label><textarea id="written" placeholder="Work through it in your own words. State assumptions, show your steps, and explain why."></textarea></div><div id="numeric-wrap" hidden></div><div id="code-wrap"><label for="code" class="sr-only">Code editor</label><textarea id="code"></textarea></div><div class="answer-actions"><span id="draft-status">Autosaved &middot; Ctrl+Space completes &middot; guides show indentation</span><button id="reset-code" class="quiet">Reset code</button><button id="run-code" class="primary">▶ Run checks <small>Ctrl + Enter</small></button><button id="review-answer" class="primary">Review my answer →</button></div><div id="editor-diagnostics" class="editor-diagnostics" role="status"></div><div id="results" aria-live="polite"></div><div class="personal-notes"><label for="personal-notes">✎ Personal notes <small>Saved to your notebook</small></label><textarea id="personal-notes" placeholder="Write a takeaway, a formula, or the mistake you want to remember…"></textarea><button id="copy-concepts" class="quiet">+ Add concept explanation to notes</button></div><div id="assessment"></div></section>
+    </div><div class="workspace-footer"><span id="review-info"></span><button id="next-problem" class="secondary">Next question →</button></div>
+  </dialog>
+  <dialog id="reading-dialog" aria-labelledby="reading-title"><div class="workspace-top"><button id="close-reading" class="quiet">← Back to reading room</button></div><div class="reading-body"><h1 id="reading-title"></h1><div id="reading-content"></div></div></dialog>
+  <dialog id="runner-dialog" aria-labelledby="runner-title"><div class="workspace-top"><button id="close-runner" class="quiet">Back to practice</button></div><div class="reading-body"><h1 id="runner-title">Private cloud checks: disabled</h1><p>Your submissions will stay private. The private GitHub runner is prepared, with execution disabled until an actual <strong>$0 Actions spending limit with a hard stop</strong> is verified. The app sends no code, opens no submission pages, and starts no local Python while disabled.</p><h2>Verify the cost limit first</h2><ol><li>Open <a href="https://github.com/settings/billing/budgets" target="_blank" rel="noopener noreferrer">GitHub billing: Budgets and alerts</a>.</li><li>Find or create an <strong>Actions product-level budget</strong> covering your account or the private Interview-Prep repository.</li><li>Set the budget to <strong>$0</strong> and enable <strong>Stop usage when budget limit is reached</strong>. Save it and verify those settings on the saved budget.</li></ol><p>An alert-only budget or remaining free allowance does not verify a spending stop. If GitHub does not offer this configuration for the account, leave the runner disabled.</p><p>After the saved settings are verified, activation is a separate change. No token is needed now.</p><p id="runner-connection-status" role="status"><strong>Status: zero-spend cap unverified; Python checks disabled.</strong></p><p>SQL, reading, notes, saved progress, autocomplete, and indentation guides still work. See RUNNER.md in the private source repo for the prepared workflow and activation conditions.</p></div></dialog>
+  <div id="toast" role="status" hidden></div>
+</body>
+</html>
