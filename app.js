@@ -202,7 +202,7 @@ async function runCode() {
   try {
     const report=p.language==='sql'?await runSql(p,code):await api('/api/run',{id:p.id,code});
     if(report.diagnostics&&current?.id===p.id)showDiagnostics(report.diagnostics);
-    if(report.status!=='disabled'){
+    if(!['disabled','setup','busy','cancelled'].includes(report.status)){
       const e=entry(p.id);e.attempts=(e.attempts||0)+1;e.lastResult=report.status;
       if(report.status==='passed') {e.passed=true;e.lastReview=Date.now();e.due=Date.now()+3*DAY;e.interval=3;recordActivity(p.id);}
       e.updated=Date.now();saveSoon();

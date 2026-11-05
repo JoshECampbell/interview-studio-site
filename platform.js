@@ -19,7 +19,7 @@ function deviceBookControls() {
 }
 function hostedNotice() {
   if(!window.PrepPlatform.static)return '';
-  return `<div class="error-banner"><strong>Private Python checks are paused for cost verification.</strong><p>The prepared runner keeps submissions private and starts no local Python. Execution stays disabled until an actual $0 GitHub Actions budget with a hard stop is verified. SQL, reading, notes, and editor assistance remain available.</p><button data-open-runner class="secondary">View private runner status</button></div>`;
+  return `<div class="error-banner"><strong>Private Python checks run on GitHub.</strong><p>Your budget setup is confirmed. Connect the private runner with a repository-scoped Issues token, then use Run checks for feedback here. No local Python is started. SQL needs no setup.</p><button data-open-runner class="secondary">Connect private runner</button></div>`;
 }
 
 document.addEventListener('click', event=>{
